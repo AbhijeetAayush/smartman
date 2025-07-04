@@ -1,0 +1,154 @@
+openapi: '3.0.3'
+info:
+    title:
+        Fn::Sub: '${AWS::StackName}-smartman-apis'
+    description:
+        Fn::Sub: 'Backend APIs for ${AWS::StackName} Smartman App'
+    version: '1.0'
+paths:
+    /profile:
+        get:
+            summary: Get User Profile
+            responses:
+                '200':
+                    description: Profile retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetProfileResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthModuleResources.Outputs.GetProfileFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /profile
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+    /profile/update:
+        post:
+            summary: Update User Profile
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateProfileRequestBody'
+                required: true
+            responses:
+                '200':
+                    description: Profile updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateProfileResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-request-validator: ValidateBody
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthModuleResources.Outputs.UpdateProfileFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /profile/update
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+x-amazon-apigateway-request-validators:
+    ValidateBody:
+        validateRequestBody: true
+        validateRequestParameters: false
+    ValidateParameters:
+        validateRequestBody: false
+        validateRequestParameters: true
+
+components:
+    schemas:
+        GetProfileResponseBody:
+            type: object
+            properties:
+                profile:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                        preferences:
+                            type: object
+        UpdateProfileRequestBody:
+            type: object
+            properties:
+                name:
+                    type: string
+                preferences:
+                    type: object
+            required:
+                - name
+        UpdateProfileResponseBody:
+            type: object
+            properties:
+                message:
+                    type: string
+        ErrorResponse:
+            type: object
+            properties:
+                error:
+                    type: string
