@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Smartman API Development and Testing Tool (Auth Module)
+
+Parameters:
+    SupabaseJwtSecret:
+        Type: String
+        Description: Supabase JWT secret for authentication
+    AllowedOrigin:
+        Type: String
+        Description: CORS allowed origin
+        Default: '*'
+
+Resources:
+    SmartmanTable:
+        Type: AWS::DynamoDB::Table
+        DeletionPolicy: Retain
+        Properties:
+            TableName: !Sub 'Smartman-${AWS::StackName}'
+            BillingMode: PAY_PER_REQUEST
+            AttributeDefinitions:
+                - AttributeName: PK
+                  AttributeType: S
+                - AttributeName: SK
+                  AttributeType: S
+            KeySchema:
+                - AttributeName: PK
+                  KeyType: HASH
+                - AttributeName: SK
+                  KeyType: RANGE
+
+    RestApiRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: Allow
+                      Principal:
+                          Service: apigateway.amazonaws.com
+                      Action: sts:AssumeRole
+            Policies:
+                - PolicyName: InvokeLambdaPolicy
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action: lambda:InvokeFunction
+                            Resource:
+                                - !GetAtt AuthModuleResources.Outputs.GetProfileFunctionArn
+                                - !GetAtt AuthModuleResources.Outputs.UpdateProfileFunctionArn
+
+    SmartmanApi:
+        Type: AWS::Serverless::Api
+        Properties:
+            StageName: Prod
+            DefinitionBody:
+                Fn::Transform:
+                    Name: AWS::Include
+                    Parameters:
+                        Location: ./api/backend-api.yaml
+            Cors:
+                AllowMethods: "'GET,POST,OPTIONS'"
+                AllowHeaders: "'Content-Type,Authorization'"
+                AllowOrigin: !Ref AllowedOrigin
+
+    AuthModuleResources:
+        Type: AWS::Serverless::Application
+        Properties:
+            Location: ./modules/auth/template.yaml
+            Parameters:
+                TableName: !Ref SmartmanTable
+                SupabaseJwtSecret: !Ref SupabaseJwtSecret
+                AllowedOrigin: !Ref AllowedOrigin
+
+Outputs:
+    SmartmanApi:
+        Description: URL of the API Gateway
+        Value: !Sub 'https://${SmartmanApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+    GetProfileFunctionArn:
+        Description: ARN of the GetProfile Lambda Function
+        Value: !GetAtt AuthModuleResources.Outputs.GetProfileFunctionArn
+    UpdateProfileFunctionArn:
+        Description: ARN of the UpdateProfile Lambda Function
+        Value: !GetAtt AuthModuleResources.Outputs.UpdateProfileFunctionArn

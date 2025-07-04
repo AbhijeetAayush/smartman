@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Auth Module for Smartman App
+
+Parameters:
+    TableName:
+        Type: String
+    SupabaseJwtSecret:
+        Type: String
+    AllowedOrigin:
+        Type: String
+
+Globals:
+    Function:
+        Runtime: nodejs18.x
+        Timeout: 30
+        Environment:
+            Variables:
+                TABLE_NAME: !Ref TableName
+                SUPABASE_JWT_SECRET: !Ref SupabaseJwtSecret
+                ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+Resources:
+    GetProfileFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: modules/auth/src/get-profile/app.handler
+            CodeUri: ../../
+            Policies:
+                - DynamoDBReadPolicy:
+                      TableName: !Ref TableName
+            Metadata:
+                BuildMethod: esbuild
+                BuildProperties:
+                    Minify: true
+                    Target: es2020
+                    Sourcemap: false
+                    EntryPoints:
+                        - modules/auth/src/get-profile/app.ts
+                    External:
+                        - '@aws-sdk/client-dynamodb'
+                        - '@aws-sdk/lib-dynamodb'
+
+    UpdateProfileFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: modules/auth/src/update-profile/app.handler
+            CodeUri: ../../
+            Policies:
+                - DynamoDBCrudPolicy:
+                      TableName: !Ref TableName
+            Metadata:
+                BuildMethod: esbuild
+                BuildProperties:
+                    Minify: true
+                    Target: es2020
+                    Sourcemap: false
+                    EntryPoints:
+                        - modules/auth/src/update-profile/app.ts
+                    External:
+                        - '@aws-sdk/client-dynamodb'
+                        - '@aws-sdk/lib-dynamodb'
+
+Outputs:
+    GetProfileFunctionArn:
+        Description: ARN of the GetProfile Lambda Function
+        Value: !GetAtt GetProfileFunction.Arn
+        Export:
+            Name: !Sub '${AWS::StackName}-GetProfileFunctionArn'
+    UpdateProfileFunctionArn:
+        Description: ARN of the UpdateProfile Lambda Function
+        Value: !GetAtt UpdateProfileFunction.Arn
+        Export:
+            Name: !Sub '${AWS::StackName}-UpdateProfileFunctionArn'
