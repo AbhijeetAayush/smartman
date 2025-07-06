@@ -1,8 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { validateJwt } from '../../../../utils/supabase-utils';
-import { deleteCollection } from '../../../../utils/collections-db-handler';
+import { deleteCollection, listCollections } from '../../../../utils/collections-db-handler';
 import { cacheSet } from '../../../../utils/redis-utils';
-import { listCollections } from '../../../../utils/collections-db-handler';
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {

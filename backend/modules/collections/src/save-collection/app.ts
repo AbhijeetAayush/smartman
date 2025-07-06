@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { validateJwt } from '../../../../utils/supabase-utils';
-import { saveCollection } from '../../../utils/collections-db-handler';
+import { listCollections, saveCollection } from '../../../../utils/collections-db-handler';
 import { validateCreateCollectionRequest } from '../../../../utils/validators';
 import { cacheSet } from '../../../../utils/redis-utils';
 
