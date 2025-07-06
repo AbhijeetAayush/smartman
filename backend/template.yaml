@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Smartman API Development and Testing Tool (Auth Module)
+Description: Smartman API Development and Testing Tool (Complete Project)
 
 Parameters:
     SupabaseJwtSecret:
@@ -11,6 +11,18 @@ Parameters:
         Type: String
         Description: CORS allowed origin
         Default: '*'
+    DeepSeekApiKey:
+        Type: String
+        Description: DeepSeek API key
+        NoEcho: true
+    UpstashRedisRestUrl:
+        Type: String
+        Description: Upstash Redis REST API URL
+        NoEcho: true
+    UpstashRedisRestToken:
+        Type: String
+        Description: Upstash Redis REST API Token
+        NoEcho: true
 
 Resources:
     SmartmanTable:
@@ -50,6 +62,12 @@ Resources:
                             Resource:
                                 - !GetAtt AuthModuleResources.Outputs.GetProfileFunctionArn
                                 - !GetAtt AuthModuleResources.Outputs.UpdateProfileFunctionArn
+                                - !GetAtt CollectionsModuleResources.Outputs.SaveCollectionFunctionArn
+                                - !GetAtt CollectionsModuleResources.Outputs.ListCollectionsFunctionArn
+                                - !GetAtt CollectionsModuleResources.Outputs.DeleteCollectionFunctionArn
+                                - !GetAtt ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn
+                                - !GetAtt PdfGenerationModuleResources.Outputs.GenerateDocsFunctionArn
+                                - !GetAtt RequestModuleResources.Outputs.ExecuteRequestFunctionArn
 
     SmartmanApi:
         Type: AWS::Serverless::Api
@@ -61,7 +79,7 @@ Resources:
                     Parameters:
                         Location: ./api/backend-api.yaml
             Cors:
-                AllowMethods: "'GET,POST,OPTIONS'"
+                AllowMethods: "'GET,POST,OPTIONS,DELETE'"
                 AllowHeaders: "'Content-Type,Authorization'"
                 AllowOrigin: !Ref AllowedOrigin
 
@@ -74,6 +92,47 @@ Resources:
                 SupabaseJwtSecret: !Ref SupabaseJwtSecret
                 AllowedOrigin: !Ref AllowedOrigin
 
+    CollectionsModuleResources:
+        Type: AWS::Serverless::Application
+        Properties:
+            Location: ./modules/collections/template.yaml
+            Parameters:
+                TableName: !Ref SmartmanTable
+                SupabaseJwtSecret: !Ref SupabaseJwtSecret
+                AllowedOrigin: !Ref AllowedOrigin
+                UpstashRedisRestUrl: !Ref UpstashRedisRestUrl
+                UpstashRedisRestToken: !Ref UpstashRedisRestToken
+
+    ErrorExplanationModuleResources:
+        Type: AWS::Serverless::Application
+        Properties:
+            Location: ./modules/error-explanation/template.yaml
+            Parameters:
+                TableName: !Ref SmartmanTable
+                SupabaseJwtSecret: !Ref SupabaseJwtSecret
+                AllowedOrigin: !Ref AllowedOrigin
+                DeepSeekApiKey: !Ref DeepSeekApiKey
+
+    PdfGenerationModuleResources:
+        Type: AWS::Serverless::Application
+        Properties:
+            Location: ./modules/pdf-generation/template.yaml
+            Parameters:
+                TableName: !Ref SmartmanTable
+                SupabaseJwtSecret: !Ref SupabaseJwtSecret
+                AllowedOrigin: !Ref AllowedOrigin
+
+    RequestModuleResources:
+        Type: AWS::Serverless::Application
+        Properties:
+            Location: ./modules/request/template.yaml
+            Parameters:
+                TableName: !Ref SmartmanTable
+                SupabaseJwtSecret: !Ref SupabaseJwtSecret
+                AllowedOrigin: !Ref AllowedOrigin
+                UpstashRedisRestUrl: !Ref UpstashRedisRestUrl
+                UpstashRedisRestToken: !Ref UpstashRedisRestToken
+
 Outputs:
     SmartmanApi:
         Description: URL of the API Gateway
@@ -84,3 +143,21 @@ Outputs:
     UpdateProfileFunctionArn:
         Description: ARN of the UpdateProfile Lambda Function
         Value: !GetAtt AuthModuleResources.Outputs.UpdateProfileFunctionArn
+    SaveCollectionFunctionArn:
+        Description: ARN of the SaveCollection Lambda Function
+        Value: !GetAtt CollectionsModuleResources.Outputs.SaveCollectionFunctionArn
+    ListCollectionsFunctionArn:
+        Description: ARN of the ListCollections Lambda Function
+        Value: !GetAtt CollectionsModuleResources.Outputs.ListCollectionsFunctionArn
+    DeleteCollectionFunctionArn:
+        Description: ARN of the DeleteCollection Lambda Function
+        Value: !GetAtt CollectionsModuleResources.Outputs.DeleteCollectionFunctionArn
+    ExplainErrorFunctionArn:
+        Description: ARN of the ExplainError Lambda Function
+        Value: !GetAtt ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn
+    GenerateDocsFunctionArn:
+        Description: ARN of the GenerateDocs Lambda Function
+        Value: !GetAtt PdfGenerationModuleResources.Outputs.GenerateDocsFunctionArn
+    ExecuteRequestFunctionArn:
+        Description: ARN of the ExecuteRequest Lambda Function
+        Value: !GetAtt RequestModuleResources.Outputs.ExecuteRequestFunctionArn
