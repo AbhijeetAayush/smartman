@@ -5,6 +5,9 @@ import {
     GetCommandOutput,
     PutCommand,
     PutCommandOutput,
+    QueryCommand,
+    QueryCommandOutput,
+    DeleteCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { Item } from '../types/model';
 
@@ -20,6 +23,34 @@ export const getItem = async (tableName: string, key: { PK: string; SK: string }
         return await docClient.send(new GetCommand({ TableName: tableName, Key: key }));
     } catch (error) {
         console.error('Error fetching item from DynamoDB:', error);
+        throw error;
+    }
+};
+
+export const getItems = async (
+    tableName: string,
+    keyCondition: { PK: string },
+    filterExpression?: string,
+): Promise<QueryCommandOutput> => {
+    const command = new QueryCommand({
+        TableName: tableName,
+        KeyConditionExpression: 'PK = :pk',
+        ExpressionAttributeValues: { ':pk': keyCondition.PK },
+        FilterExpression: filterExpression,
+    });
+    try {
+        return await docClient.send(command);
+    } catch (error) {
+        console.error('Error querying items from DynamoDB:', error);
+        throw error;
+    }
+};
+
+export const deleteItem = async (tableName: string, key: { PK: string; SK: string }): Promise<void> => {
+    try {
+        await docClient.send(new DeleteCommand({ TableName: tableName, Key: key }));
+    } catch (error) {
+        console.error('Error deleting item from DynamoDB:', error);
         throw error;
     }
 };
