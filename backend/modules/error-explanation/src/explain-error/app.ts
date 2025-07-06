@@ -1,8 +1,29 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { validateJwt } from '../../../../utils/supabase-utils';
-import { explainError } from '../../../../utils/error-utils';
 import { cacheGet, cacheSet } from '../../../../utils/redis-utils';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
+
+interface DeepSeekResponse {
+    explanation: string;
+}
+
+async function explainError(errorMessage: string): Promise<string> {
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) throw new Error('DEEPSEEK_API_KEY is not set');
+
+    const response: Response = await fetch('https://api.deepseek.com/explain', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ error: errorMessage }),
+    });
+
+    if (!response.ok) throw new Error('DeepSeek API request failed');
+    const data: DeepSeekResponse = (await response.json()) as DeepSeekResponse;
+    return data.explanation || 'No explanation available';
+}
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
@@ -25,23 +46,5 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         return { statusCode: 200, body: JSON.stringify({ explanation }) };
     } catch (error: any) {
         return { statusCode: 500, body: JSON.stringify({ error: error.message || 'Failed to explain error' }) };
-    }
-
-    async function explainError(errorMessage: string): Promise<string> {
-        const apiKey = process.env.DEEPSEEK_API_KEY;
-        if (!apiKey) throw new Error('DEEPSEEK_API_KEY is not set');
-
-        const response = await fetch('https://api.deepseek.com/explain', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ error: errorMessage }),
-        });
-
-        if (!response.ok) throw new Error('DeepSeek API request failed');
-        const data = await response.json();
-        return data.explanation || 'No explanation available';
     }
 };

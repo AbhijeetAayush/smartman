@@ -1,10 +1,10 @@
 import { saveItem } from './ddb-utils';
 import { cacheSet } from './redis-utils';
 import { RequestHistory } from '../types/model';
-import fetch from 'node-fetch';
+import fetch, { Response } from 'node-fetch';
 
 export const executeRequest = async (url: string, method: string, body?: any): Promise<any> => {
-    const response = await fetch(url, {
+    const response: Response = await fetch(url, {
         method,
         body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/json' },
@@ -22,5 +22,5 @@ export const saveRequestHistory = async (userId: string, history: RequestHistory
         data: history,
     };
     await saveItem(process.env.TABLE_NAME!, item);
-    await cacheSet(`history:${user.userId}`, JSON.stringify({ history: [item.data] }), 3600); // Cache for 1 hour
+    await cacheSet(`history:${userId}`, JSON.stringify({ history: [item.data] }), 3600); // Cache for 1 hour
 };
