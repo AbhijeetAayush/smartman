@@ -1,17 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Smartman API Development and Testing Tool
+Description: Smartman API Development and Testing Tool (Auth Module)
 
 Parameters:
     SupabaseJwtSecret:
         Type: String
         Description: Supabase JWT secret for authentication
-    DeepSeekApiKey:
-        Type: String
-        Description: DeepSeek API key for LLM
-    UpstashRedisUrl:
-        Type: String
-        Description: Upstash Redis connection URL
+        NoEcho: true
     AllowedOrigin:
         Type: String
         Description: CORS allowed origin
@@ -35,11 +30,6 @@ Resources:
                 - AttributeName: SK
                   KeyType: RANGE
 
-    DocsBucket:
-        Type: AWS::S3::Bucket
-        Properties:
-            BucketName: !Sub 'smartman-docs-${AWS::StackName}'
-
     RestApiRole:
         Type: AWS::IAM::Role
         Properties:
@@ -60,13 +50,6 @@ Resources:
                             Resource:
                                 - !GetAtt AuthModuleResources.Outputs.GetProfileFunctionArn
                                 - !GetAtt AuthModuleResources.Outputs.UpdateProfileFunctionArn
-                                # Add other module ARNs when implemented
-                                # - !GetAtt RequestModuleResources.Outputs.ExecuteRequestFunctionArn
-                                # - !GetAtt CollectionsModuleResources.Outputs.SaveCollectionFunctionArn
-                                # - !GetAtt CollectionsModuleResources.Outputs.ListCollectionsFunctionArn
-                                # - !GetAtt CollectionsModuleResources.Outputs.DeleteCollectionFunctionArn
-                                # - !GetAtt PdfGenerationModuleResources.Outputs.GenerateDocsFunctionArn
-                                # - !GetAtt ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn
 
     SmartmanApi:
         Type: AWS::Serverless::Api
@@ -78,7 +61,7 @@ Resources:
                     Parameters:
                         Location: ./api/backend-api.yaml
             Cors:
-                AllowMethods: "'GET,POST,DELETE,OPTIONS'"
+                AllowMethods: "'GET,POST,OPTIONS'"
                 AllowHeaders: "'Content-Type,Authorization'"
                 AllowOrigin: !Ref AllowedOrigin
 
@@ -90,44 +73,6 @@ Resources:
                 TableName: !Ref SmartmanTable
                 SupabaseJwtSecret: !Ref SupabaseJwtSecret
                 AllowedOrigin: !Ref AllowedOrigin
-
-    # Placeholder for other modules (to be uncommented when implemented)
-    # RequestModuleResources:
-    #   Type: AWS::Serverless::Application
-    #   Properties:
-    #     Location: ./modules/request/template.yaml
-    #     Parameters:
-    #       TableName: !Ref SmartmanTable
-    #       UpstashRedisUrl: !Ref UpstashRedisUrl
-    #       SupabaseJwtSecret: !Ref SupabaseJwtSecret
-    #       DeepSeekApiKey: !Ref DeepSeekApiKey
-    #       AllowedOrigin: !Ref AllowedOrigin
-    #
-    # CollectionsModuleResources:
-    #   Type: AWS::Serverless::Application
-    #   Properties:
-    #     Location: ./modules/collections/template.yaml
-    #     Parameters:
-    #       TableName: !Ref SmartmanTable
-    #       SupabaseJwtSecret: !Ref SupabaseJwtSecret
-    #       AllowedOrigin: !Ref AllowedOrigin
-    #
-    # PdfGenerationModuleResources:
-    #   Type: AWS::Serverless::Application
-    #   Properties:
-    #     Location: ./modules/pdf-generation/template.yaml
-    #     Parameters:
-    #       TableName: !Ref SmartmanTable
-    #       DocsBucket: !Ref DocsBucket
-    #       AllowedOrigin: !Ref AllowedOrigin
-    #
-    # ErrorExplanationModuleResources:
-    #   Type: AWS::Serverless::Application
-    #   Properties:
-    #     Location: ./modules/error-explanation/template.yaml
-    #     Parameters:
-    #       DeepSeekApiKey: !Ref DeepSeekApiKey
-    #       AllowedOrigin: !Ref AllowedOrigin
 
 Outputs:
     SmartmanApi:

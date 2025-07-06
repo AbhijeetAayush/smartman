@@ -13,9 +13,14 @@ parallel = true
 lint = true
 
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
+stack_name = "smartman"
+s3_prefix = "smartman"
+region = "us-east-1"
+parameter_overrides = "AllowedOrigin=\"*\""
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true

@@ -29,17 +29,14 @@ Resources:
             Policies:
                 - DynamoDBReadPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: es2020
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/auth/src/get-profile/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - modules/auth/src/get-profile/app.ts
 
     UpdateProfileFunction:
         Type: AWS::Serverless::Function
@@ -49,17 +46,14 @@ Resources:
             Policies:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: es2020
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/auth/src/update-profile/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - modules/auth/src/update-profile/app.ts
 
 Outputs:
     GetProfileFunctionArn:

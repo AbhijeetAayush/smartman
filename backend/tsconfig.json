@@ -1,15 +1,16 @@
 {
     "compilerOptions": {
-      "target": "es2020",
-      "strict": true,
-      "preserveConstEnums": true,
-      "noEmit": true,
-      "sourceMap": false,
-      "module":"es2015",
-      "moduleResolution":"node",
-      "esModuleInterop": true, 
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,  
+        "target": "es2020",
+        "module": "CommonJS",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./dist",
+        "rootDir": "./",
+        "declaration": true,
+        "moduleResolution": "node"
     },
-    "exclude": ["node_modules", "**/*.test.ts"]
-  }
+    "include": ["modules/**/*", "utils/**/*", "types/**/*"],
+    "exclude": ["node_modules", ".aws-sam"]
+}
