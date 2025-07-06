@@ -1,0 +1,9 @@
+{
+    "name": "nodejs-layer",
+    "version": "1.0.0",
+    "description": "Lambda layer for Smartman with pdfkit and node-fetch",
+    "dependencies": {
+        "pdfkit": "^0.13.0",
+        "node-fetch": "^3.3.2"
+    }
+}

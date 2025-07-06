@@ -10,30 +10,41 @@ Parameters:
     AllowedOrigin:
         Type: String
 
+Globals:
+    Function:
+        Runtime: nodejs18.x
+        Timeout: 30
+        Environment:
+            Variables:
+                TABLE_NAME: !Ref TableName
+                SUPABASE_JWT_SECRET: !Ref SupabaseJwtSecret
+                ALLOWED_ORIGIN: !Ref AllowedOrigin
+
 Resources:
     GenerateDocsFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/pdf-generation/src/generate-docs/app.handler
-            CodeUri: ../../
+            Handler: src/generate-docs/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBReadPolicy:
                       TableName: !Ref TableName
             Layers:
-                - !Sub 'arn:aws:lambda:${AWS::Region}:784486495209:layer:nodejs:1' # Placeholder layer ARN with pdfkit
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: 'es2020'
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/pdf-generation/src/generate-docs/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
-                        - jsonwebtoken
-                        - pdfkit
+                - !Sub 'arn:aws:lambda:${AWS::Region}:784486495209:layer:smartman-nodejs-layer:1' # Replace with actual ARN from Step 1
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/generate-docs/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
+                    - jsonwebtoken
+                    - pdfkit
 
 Outputs:
     GenerateDocsFunctionArn:

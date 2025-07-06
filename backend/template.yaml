@@ -42,6 +42,17 @@ Resources:
                 - AttributeName: SK
                   KeyType: RANGE
 
+    SmartmanBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Sub 'smartman-${AWS::StackName}-${AWS::AccountId}'
+            AccessControl: Private
+            PublicAccessBlockConfiguration:
+                BlockPublicAcls: true
+                BlockPublicPolicy: true
+                IgnorePublicAcls: true
+                RestrictPublicBuckets: true
+
     RestApiRole:
         Type: AWS::IAM::Role
         Properties:
@@ -66,8 +77,18 @@ Resources:
                                 - !GetAtt CollectionsModuleResources.Outputs.ListCollectionsFunctionArn
                                 - !GetAtt CollectionsModuleResources.Outputs.DeleteCollectionFunctionArn
                                 - !GetAtt ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn
-                                - !GetAtt PdfGenerationModuleResources.Outputs.GenerateDocsFunctionArn
+                                - !GetAtt DocumentationModuleResources.Outputs.GenerateDocsFunctionArn
                                 - !GetAtt RequestModuleResources.Outputs.ExecuteRequestFunctionArn
+                - PolicyName: S3AccessPolicy
+                  PolicyDocument:
+                      Version: '2012-10-17'
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - s3:PutObject
+                                - s3:GetObject
+                                - s3:PutObjectAcl
+                            Resource: !Sub 'arn:aws:s3:::smartman-${AWS::StackName}-${AWS::AccountId}/*'
 
     SmartmanApi:
         Type: AWS::Serverless::Api
@@ -112,15 +133,18 @@ Resources:
                 SupabaseJwtSecret: !Ref SupabaseJwtSecret
                 AllowedOrigin: !Ref AllowedOrigin
                 DeepSeekApiKey: !Ref DeepSeekApiKey
+                UpstashRedisRestUrl: !Ref UpstashRedisRestUrl
+                UpstashRedisRestToken: !Ref UpstashRedisRestToken
 
-    PdfGenerationModuleResources:
+    DocumentationModuleResources:
         Type: AWS::Serverless::Application
         Properties:
-            Location: ./modules/pdf-generation/template.yaml
+            Location: ./modules/documentation/template.yaml
             Parameters:
                 TableName: !Ref SmartmanTable
                 SupabaseJwtSecret: !Ref SupabaseJwtSecret
                 AllowedOrigin: !Ref AllowedOrigin
+                BucketName: !Ref SmartmanBucket
 
     RequestModuleResources:
         Type: AWS::Serverless::Application
@@ -157,7 +181,7 @@ Outputs:
         Value: !GetAtt ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn
     GenerateDocsFunctionArn:
         Description: ARN of the GenerateDocs Lambda Function
-        Value: !GetAtt PdfGenerationModuleResources.Outputs.GenerateDocsFunctionArn
+        Value: !GetAtt DocumentationModuleResources.Outputs.GenerateDocsFunctionArn
     ExecuteRequestFunctionArn:
         Description: ARN of the ExecuteRequest Lambda Function
         Value: !GetAtt RequestModuleResources.Outputs.ExecuteRequestFunctionArn

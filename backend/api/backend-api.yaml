@@ -5,6 +5,7 @@ info:
     description:
         Fn::Sub: 'Backend APIs for ${AWS::StackName} Smartman App'
     version: '1.0'
+
 paths:
     /profile:
         get:
@@ -113,6 +114,305 @@ paths:
                 requestTemplates:
                     application/json: '{"statusCode": 200}'
 
+    /collections:
+        post:
+            summary: Save a Collection
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateCollectionRequestBody'
+                required: true
+            responses:
+                '200':
+                    description: Collection saved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateCollectionResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-request-validator: ValidateBody
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CollectionsModuleResources.Outputs.SaveCollectionFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        get:
+            summary: List User Collections
+            responses:
+                '200':
+                    description: Collections retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListCollectionsResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CollectionsModuleResources.Outputs.ListCollectionsFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /collections
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+    /collections/{id}:
+        delete:
+            summary: Delete a Collection
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Collection deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteCollectionResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CollectionsModuleResources.Outputs.DeleteCollectionFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /collections/{id}
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'DELETE,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+    /explain-error:
+        post:
+            summary: Explain an Error Using DeepSeek
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExplainErrorRequestBody'
+                required: true
+            responses:
+                '200':
+                    description: Error explained successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExplainErrorResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-request-validator: ValidateBody
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ErrorExplanationModuleResources.Outputs.ExplainErrorFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /explain-error
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+    /generate-docs:
+        get:
+            summary: Generate and Get Documentation URL
+            responses:
+                '200':
+                    description: Documentation URL generated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GenerateDocsResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DocumentationModuleResources.Outputs.GenerateDocsFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /generate-docs
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
+    /requests:
+        post:
+            summary: Execute an API Request
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ExecuteRequestRequestBody'
+                required: true
+            responses:
+                '200':
+                    description: Request executed successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ExecuteRequestResponseBody'
+                '400':
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+            x-amazon-apigateway-request-validator: ValidateBody
+            x-amazon-apigateway-integration:
+                type: 'aws_proxy'
+                httpMethod: 'POST'
+                uri:
+                    Fn::Sub: 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RequestModuleResources.Outputs.ExecuteRequestFunctionArn}/invocations'
+                credentials:
+                    Fn::Sub: '${RestApiRole.Arn}'
+        options:
+            summary: CORS preflight for /requests
+            responses:
+                '200':
+                    description: Successful CORS preflight response
+                    headers:
+                        Access-Control-Allow-Origin:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Methods:
+                            schema:
+                                type: string
+                        Access-Control-Allow-Headers:
+                            schema:
+                                type: string
+            x-amazon-apigateway-integration:
+                type: 'mock'
+                responses:
+                    default:
+                        statusCode: '200'
+                        responseParameters:
+                            method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+                            method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+                            method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                    application/json: '{"statusCode": 200}'
+
 x-amazon-apigateway-request-validators:
     ValidateBody:
         validateRequestBody: true
@@ -151,4 +451,70 @@ components:
             type: object
             properties:
                 error:
+                    type: string
+        CreateCollectionRequestBody:
+            type: object
+            properties:
+                collectionName:
+                    type: string
+                items:
+                    type: array
+                    items:
+                        type: string
+            required:
+                - collectionName
+                - items
+        CreateCollectionResponseBody:
+            type: object
+            properties:
+                message:
+                    type: string
+        ListCollectionsResponseBody:
+            type: object
+            properties:
+                collections:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            collectionId:
+                                type: string
+                            collectionName:
+                                type: string
+                            items:
+                                type: array
+                                items:
+                                    type: string
+        DeleteCollectionResponseBody:
+            type: object
+            properties:
+                message:
+                    type: string
+        ExplainErrorRequestBody:
+            type: object
+            properties:
+                errorMessage:
+                    type: string
+            required:
+                - errorMessage
+        ExplainErrorResponseBody:
+            type: object
+            properties:
+                explanation:
+                    type: string
+        ExecuteRequestRequestBody:
+            type: object
+            properties:
+                url:
+                    type: string
+                method:
+                    type: string
+                body:
+                    type: object
+            required:
+                - url
+        GenerateDocsResponseBody:
+            type: object
+            properties:
+                url:
                     type: string

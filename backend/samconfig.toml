@@ -16,8 +16,8 @@ lint = true
 capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
 confirm_changeset = true
 resolve_s3 = true
-stack_name = "smartman"
-s3_prefix = "smartman"
+stack_name = "smartman-v3"
+s3_prefix = "smartman-v3"
 region = "us-east-1"
 parameter_overrides = "AllowedOrigin=\"*\""
 image_repositories = []

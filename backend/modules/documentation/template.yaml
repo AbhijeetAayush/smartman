@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Documentation Module for Smartman App
+
+Parameters:
+    TableName:
+        Type: String
+    SupabaseJwtSecret:
+        Type: String
+    AllowedOrigin:
+        Type: String
+    BucketName:
+        Type: String
+
+Globals:
+    Function:
+        Runtime: nodejs18.x
+        Timeout: 30
+        Environment:
+            Variables:
+                TABLE_NAME: !Ref TableName
+                SUPABASE_JWT_SECRET: !Ref SupabaseJwtSecret
+                ALLOWED_ORIGIN: !Ref AllowedOrigin
+                BUCKET_NAME: !Ref BucketName
+
+Resources:
+    GenerateDocsFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: src/generate-docs/app.handler
+            CodeUri: ./
+            Policies:
+                - DynamoDBReadPolicy:
+                      TableName: !Ref TableName
+                - S3CrudPolicy:
+                      BucketName: !Ref BucketName
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/generate-docs/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
+                    - '@aws-sdk/client-s3'
+                    - '@aws-sdk/s3-request-presigner'
+
+Outputs:
+    GenerateDocsFunctionArn:
+        Description: ARN of the GenerateDocs Lambda Function
+        Value: !GetAtt GenerateDocsFunction.Arn
+        Export:
+            Name: !Sub '${AWS::StackName}-GenerateDocsFunctionArn'

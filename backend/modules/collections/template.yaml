@@ -34,68 +34,65 @@ Resources:
     SaveCollectionFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/collections/src/save-collection/app.handler
-            CodeUri: ../../
+            Handler: src/save-collection/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: 'es2020'
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/collections/src/save-collection/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
-                        - jsonwebtoken
-                        - node-fetch
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/save-collection/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
     ListCollectionsFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/collections/src/list-collections/app.handler
-            CodeUri: ../../
+            Handler: src/list-collections/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBReadPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: 'es2020'
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/collections/src/list-collections/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
-                        - jsonwebtoken
-                        - node-fetch
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/list-collections/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
     DeleteCollectionFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/collections/src/delete-collection/app.handler
-            CodeUri: ../../
+            Handler: src/delete-collection/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: 'es2020'
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/collections/src/delete-collection/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
-                        - jsonwebtoken
-                        - node-fetch
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/delete-collection/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
 Outputs:
     SaveCollectionFunctionArn:

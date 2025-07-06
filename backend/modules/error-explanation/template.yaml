@@ -39,24 +39,23 @@ Resources:
     ExplainErrorFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/error-explanation/src/explain-error/app.handler
-            CodeUri: ../../
+            Handler: src/explain-error/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBReadPolicy:
                       TableName: !Ref TableName
-            Metadata:
-                BuildMethod: esbuild
-                BuildProperties:
-                    Minify: true
-                    Target: 'es2020'
-                    Sourcemap: false
-                    EntryPoints:
-                        - modules/error-explanation/src/explain-error/app.ts
-                    External:
-                        - '@aws-sdk/client-dynamodb'
-                        - '@aws-sdk/lib-dynamodb'
-                        - jsonwebtoken
-                        - node-fetch
+            Runtime: nodejs18.x
+        Metadata:
+            BuildMethod: esbuild
+            BuildProperties:
+                Minify: true
+                Target: 'es2020'
+                Sourcemap: false
+                EntryPoints:
+                    - src/explain-error/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
 Outputs:
     ExplainErrorFunctionArn:

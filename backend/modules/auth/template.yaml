@@ -24,11 +24,12 @@ Resources:
     GetProfileFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/auth/src/get-profile/app.handler
-            CodeUri: ../../
+            Handler: src/get-profile/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBReadPolicy:
                       TableName: !Ref TableName
+            Runtime: nodejs18.x
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
@@ -36,16 +37,20 @@ Resources:
                 Target: 'es2020'
                 Sourcemap: false
                 EntryPoints:
-                    - modules/auth/src/get-profile/app.ts
+                    - src/get-profile/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
     UpdateProfileFunction:
         Type: AWS::Serverless::Function
         Properties:
-            Handler: modules/auth/src/update-profile/app.handler
-            CodeUri: ../../
+            Handler: src/update-profile/app.handler
+            CodeUri: ./
             Policies:
                 - DynamoDBCrudPolicy:
                       TableName: !Ref TableName
+            Runtime: nodejs18.x
         Metadata:
             BuildMethod: esbuild
             BuildProperties:
@@ -53,7 +58,10 @@ Resources:
                 Target: 'es2020'
                 Sourcemap: false
                 EntryPoints:
-                    - modules/auth/src/update-profile/app.ts
+                    - src/update-profile/app.ts
+                External:
+                    - '@aws-sdk/client-dynamodb'
+                    - '@aws-sdk/lib-dynamodb'
 
 Outputs:
     GetProfileFunctionArn:
