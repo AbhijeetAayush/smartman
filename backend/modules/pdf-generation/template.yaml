@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: PDF Generation Module for Smartman App
+
+Parameters:
+    TableName:
+        Type: String
+    SupabaseJwtSecret:
+        Type: String
+    AllowedOrigin:
+        Type: String
+
+Resources:
+    GenerateDocsFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            Handler: modules/pdf-generation/src/generate-docs/app.handler
+            CodeUri: ../../
+            Policies:
+                - DynamoDBReadPolicy:
+                      TableName: !Ref TableName
+            Layers:
+                - !Sub 'arn:aws:lambda:${AWS::Region}:784486495209:layer:nodejs:1' # Placeholder layer ARN with pdfkit
+            Metadata:
+                BuildMethod: esbuild
+                BuildProperties:
+                    Minify: true
+                    Target: 'es2020'
+                    Sourcemap: false
+                    EntryPoints:
+                        - modules/pdf-generation/src/generate-docs/app.ts
+                    External:
+                        - '@aws-sdk/client-dynamodb'
+                        - '@aws-sdk/lib-dynamodb'
+                        - jsonwebtoken
+                        - pdfkit
+
+Outputs:
+    GenerateDocsFunctionArn:
+        Description: ARN of the GenerateDocs Lambda Function
+        Value: !GetAtt GenerateDocsFunction.Arn
+        Export:
+            Name: !Sub '${AWS::StackName}-GenerateDocsFunctionArn'
